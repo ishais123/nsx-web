@@ -20,12 +20,18 @@ worksheet.write(0, 4, "Action")
 
 def parse_args():
     parser = argparse.ArgumentParser(description='This is HELP doc for NSX-T Automation tool')
+    parser.add_argument("-manager", "--manager", help="Your nsx maanger ip address.")
     parser.add_argument("-user", "--username", help="Your nsx username.")
     parser.add_argument("-pwd", "--password", help="Your nsx password.")
     parser.add_argument("-auth", "--authorization", help="Your nsx password.")
     args = parser.parse_args()
     return args
 
+
+args = parse_args()
+nsx_username = args.username
+nsx_password = args.password
+nsx_manger = args.manager
 
 def get_sections_id():
     ids = []
@@ -35,7 +41,7 @@ def get_sections_id():
       'Cookie': 'JSESSIONID=BCCFED32F7DFCB6233E1A6E545B00E90'
     }
 
-    url = "https://172.16.20.103/policy/api/v1/infra/domains/default/security-policies"
+    url = f"https://{nsx_manger}/policy/api/v1/infra/domains/default/security-policies"
 
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     to_json = response.json()
@@ -74,7 +80,7 @@ def nsx_api_call(section_id):
       'Cookie': 'JSESSIONID=BCCFED32F7DFCB6233E1A6E545B00E90'
     }
 
-    url = f"https://172.16.20.103/policy/api/v1/infra/domains/default/security-policies/{section_id}/rules"
+    url = f"https://{nsx_manger}/policy/api/v1/infra/domains/default/security-policies/{section_id}/rules"
 
     response = requests.request("GET", url, headers=headers, data=payload, verify=False)
     return response
@@ -124,9 +130,6 @@ app = Flask(__name__)
 def login():
     error = None
     if request.method == 'POST':
-        args = parse_args()
-        nsx_username = args.username
-        nsx_password = args.password
         if request.form['username'] != f'{nsx_username}' or request.form['password'] != f'{nsx_password}':
             error = 'Invalid Credentials. Please try again.'
         else:
